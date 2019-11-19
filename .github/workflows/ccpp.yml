@@ -1,0 +1,25 @@
+name: C/C++ CI
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - uses: actions/setup-python@v1
+      with:
+        python-version: '3.x'
+    - name: Install Dependencies
+      run: |
+        sudo apt update -yq
+        sudo apt install -yq --no-install-recommends meson ninja-build python3-yaml
+        sudo apt install -yq --no-install-recommends pkg-config libudev-dev python3-sphinx doxygen graphviz
+        sudo apt install -yq --no-install-recommends qtbase5-dev libqt5core5a libqt5gui5 libqt5widgets5
+        pip3 install meson
+    - name: configure
+      run: meson build
+    - name: ninja
+      run: ninja -C build
+    - name: ninja test
+      run: ninja -C build test
