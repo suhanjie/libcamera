@@ -13,6 +13,7 @@
 #include <set>
 #include <string>
 #include <sys/sysmacros.h>
+#include <sys/types.h>
 #include <vector>
 
 #include <ipa/ipa_interface.h>
