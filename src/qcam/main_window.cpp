@@ -11,6 +11,7 @@
 #include <sys/mman.h>
 
 #include <QCoreApplication>
+#include <QIcon>
 #include <QInputDialog>
 #include <QTimer>
 #include <QToolBar>
@@ -63,7 +64,7 @@ int MainWindow::createToolbars(CameraManager *cm)
 
 	toolbar_ = addToolBar("");
 
-	action = toolbar_->addAction("Quit");
+	action = toolbar_->addAction(QIcon(":x-circle.svg"), "Quit");
 	connect(action, &QAction::triggered, this, &MainWindow::quit);
 
 	QAction *cameraAction = new QAction("&Cameras", this);
@@ -78,6 +79,15 @@ int MainWindow::createToolbars(CameraManager *cm)
 		cameraButton->addAction(action);
 		connect(action, &QAction::triggered, this, [=]() { this->setCamera(cam); });
 	}
+
+	action = toolbar_->addAction(QIcon(":play-circle.svg"), "start");
+	connect(action, &QAction::triggered, this, &MainWindow::startCapture);
+
+	toolbar_->addAction(QIcon(":pause-circle.svg"), "pause");
+	/* TODO: Connect an action to perform when 'pause' requested? or remove */
+
+	action = toolbar_->addAction(QIcon(":stop-circle.svg"), "stop");
+	connect(action, &QAction::triggered, this, &MainWindow::stopCapture);
 
 	return 0;
 }

@@ -46,14 +46,13 @@ private Q_SLOTS:
 
 	int setCamera(const std::shared_ptr<Camera> &cam);
 
+	int startCapture();
+	void stopCapture();
+
 private:
 	int createToolbars(CameraManager *cm);
 	std::string chooseCamera(CameraManager *cm);
 	int openCamera(CameraManager *cm);
-
-	int startCapture();
-	void stopCapture();
-
 	void requestComplete(Request *request);
 	int display(FrameBuffer *buffer);
 
