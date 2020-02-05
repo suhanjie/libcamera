@@ -37,7 +37,6 @@ MainWindow::MainWindow(CameraManager *cm, const OptionsParser::Options &options)
 
 	ret = openCamera(cm);
 	if (!ret) {
-		allocator_ = FrameBufferAllocator::create(camera_);
 		ret = startCapture();
 	}
 
@@ -50,7 +49,6 @@ MainWindow::~MainWindow()
 {
 	if (camera_) {
 		stopCapture();
-		delete allocator_;
 		camera_->release();
 		camera_.reset();
 	}
@@ -171,6 +169,7 @@ int MainWindow::startCapture()
 
 	adjustSize();
 
+	allocator_ = FrameBufferAllocator::create(camera_);
 	ret = allocator_->allocate(stream);
 	if (ret < 0) {
 		std::cerr << "Failed to allocate capture buffers" << std::endl;
@@ -254,6 +253,8 @@ void MainWindow::stopCapture()
 		munmap(memory, length);
 	}
 	mappedBuffers_.clear();
+
+	delete allocator_;
 
 	isCapturing_ = false;
 
