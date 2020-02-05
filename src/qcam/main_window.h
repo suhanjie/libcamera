@@ -48,6 +48,7 @@ private Q_SLOTS:
 
 	int startCapture();
 	void stopCapture();
+	void saveImage();
 
 private:
 	int createToolbars(CameraManager *cm);

@@ -11,7 +11,10 @@
 #include <sys/mman.h>
 
 #include <QCoreApplication>
+#include <QFileDialog>
 #include <QIcon>
+#include <QImage>
+#include <QImageWriter>
 #include <QInputDialog>
 #include <QTimer>
 #include <QToolBar>
@@ -88,6 +91,9 @@ int MainWindow::createToolbars(CameraManager *cm)
 
 	action = toolbar_->addAction(QIcon(":stop-circle.svg"), "stop");
 	connect(action, &QAction::triggered, this, &MainWindow::stopCapture);
+
+	action = toolbar_->addAction(QIcon(":save.svg"), "save");
+	connect(action, &QAction::triggered, this, &MainWindow::saveImage);
 
 	return 0;
 }
@@ -337,6 +343,22 @@ void MainWindow::stopCapture()
 
 	titleTimer_.stop();
 	setWindowTitle(title_);
+}
+
+void MainWindow::saveImage()
+{
+	/* Take a lock to prevent updating the backed image, copy,
+	 * then ask where to save with lock released */
+
+	QImage image = viewfinder_->getCurrentImage();
+
+	QString filename = QFileDialog::getSaveFileName(this, "Save Image", "",
+							"Image Files (*.png *.jpg *.jpeg)");
+
+	std::cerr << "Save jpeg to " << filename.toStdString() << std::endl;
+
+	QImageWriter writer(filename);
+	writer.write(image);
 }
 
 void MainWindow::requestComplete(Request *request)

@@ -6,6 +6,7 @@
  */
 
 #include <QImage>
+#include <QImageWriter>
 #include <QPainter>
 
 #include "format_converter.h"
@@ -25,6 +26,12 @@ void ViewFinder::display(const unsigned char *raw, size_t size)
 {
 	converter_.convert(raw, size, image_);
 	update();
+}
+
+QImage ViewFinder::getCurrentImage()
+{
+	/* Ideally need to lock, return/copy, then unlock... Can a scoped lock work? */
+	return *image_;
 }
 
 int ViewFinder::setFormat(unsigned int format, unsigned int width,

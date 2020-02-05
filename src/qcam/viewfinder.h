@@ -23,6 +23,8 @@ public:
 		      unsigned int height);
 	void display(const unsigned char *rgb, size_t size);
 
+	QImage getCurrentImage();
+
 protected:
 	void paintEvent(QPaintEvent *) override;
 	QSize sizeHint() const override;
