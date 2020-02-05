@@ -13,6 +13,8 @@
 #include <QCoreApplication>
 #include <QInputDialog>
 #include <QTimer>
+#include <QToolBar>
+#include <QToolButton>
 
 #include <libcamera/camera_manager.h>
 #include <libcamera/version.h>
@@ -26,6 +28,8 @@ MainWindow::MainWindow(CameraManager *cm, const OptionsParser::Options &options)
 	: options_(options), allocator_(nullptr), isCapturing_(false)
 {
 	int ret;
+
+	createToolbars(cm);
 
 	title_ = "QCam " + QString::fromStdString(CameraManager::version());
 	setWindowTitle(title_);
@@ -53,6 +57,31 @@ MainWindow::~MainWindow()
 	}
 }
 
+int MainWindow::createToolbars(CameraManager *cm)
+{
+	QAction *action;
+
+	toolbar_ = addToolBar("");
+
+	action = toolbar_->addAction("Quit");
+	connect(action, &QAction::triggered, this, &MainWindow::quit);
+
+	QAction *cameraAction = new QAction("&Cameras", this);
+	toolbar_->addAction(cameraAction);
+
+	QToolButton *cameraButton = dynamic_cast<QToolButton *>(toolbar_->widgetForAction(cameraAction));
+
+	cameraButton->setPopupMode(QToolButton::InstantPopup);
+
+	for (const std::shared_ptr<Camera> &cam : cm->cameras()) {
+		action = new QAction(QString::fromStdString(cam->name()));
+		cameraButton->addAction(action);
+		connect(action, &QAction::triggered, this, [=]() { this->setCamera(cam); });
+	}
+
+	return 0;
+}
+
 void MainWindow::quit()
 {
 	QTimer::singleShot(0, QCoreApplication::instance(),
@@ -70,6 +99,37 @@ void MainWindow::updateTitle()
 	previousFrames_ = framesCaptured_;
 
 	setWindowTitle(title_ + " : " + QString::number(fps, 'f', 2) + " fps");
+}
+
+int MainWindow::setCamera(const std::shared_ptr<Camera> &cam)
+{
+	std::cout << "Chose " << cam->name() << std::endl;
+
+	if (cam->acquire()) {
+		std::cout << "Failed to acquire camera" << std::endl;
+		return -EBUSY;
+	}
+
+	std::cout << "Switching to camera " << cam->name() << std::endl;
+
+	stopCapture();
+	camera_->release();
+
+	/*
+	 * If we don't disconnect this signal, it will persist (and get
+	 * re-added and thus duplicated later if we ever switch back to an
+	 * previously streamed camera). This causes all sorts of pain.
+	 *
+	 * Perhaps releasing a camera should disconnect all (public?) connected
+	 * signals forcefully!
+	 */
+	camera_->requestCompleted.disconnect(this, &MainWindow::requestComplete);
+	camera_ = cam;
+	camera_->requestCompleted.connect(this, &MainWindow::requestComplete);
+
+	startCapture();
+
+	return 0;
 }
 
 std::string MainWindow::chooseCamera(CameraManager *cm)
