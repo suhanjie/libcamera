@@ -41,6 +41,7 @@ public:
 	~MainWindow();
 
 private Q_SLOTS:
+	void quit();
 	void updateTitle();
 
 private:

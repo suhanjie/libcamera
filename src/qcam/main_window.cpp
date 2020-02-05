@@ -41,8 +41,7 @@ MainWindow::MainWindow(CameraManager *cm, const OptionsParser::Options &options)
 	}
 
 	if (ret < 0)
-		QTimer::singleShot(0, QCoreApplication::instance(),
-				   &QCoreApplication::quit);
+		quit();
 }
 
 MainWindow::~MainWindow()
@@ -52,6 +51,12 @@ MainWindow::~MainWindow()
 		camera_->release();
 		camera_.reset();
 	}
+}
+
+void MainWindow::quit()
+{
+	QTimer::singleShot(0, QCoreApplication::instance(),
+			   &QCoreApplication::quit);
 }
 
 void MainWindow::updateTitle()
